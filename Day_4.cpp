@@ -55,7 +55,7 @@ void solve() {
 }
 
 int main() {
-	freopen("data.txt", "r", stdin);
+	freopen("Day_5_data.txt", "r", stdin);
 	ios::sync_with_stdio(0);
 	cin.tie(0);
 
