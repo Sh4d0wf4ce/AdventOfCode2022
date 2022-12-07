@@ -1,53 +1,82 @@
-#include <iostream>
-#include <vector>
-#include <fstream>
-#include <string>
-#include <stack>
+#include <bits/stdc++.h>
 
 using namespace std;
 
-class Node {
-public:
-    int size;
+int currentResult = 0;
+
+struct Node
+{
     string name;
-    vector<Node*> children;
-
-    Node() {
-        name = "/";
-    }
-
-    Node(string n) {
-        name = n;
-    }
-
-    Node(string n, int s) {
-        name = n;
-        size = s;
-    }
-
-    Node(const Node& n1) {
-        name = n1.name;
-        size = n1.size;
-    }
-
-    void addNode(Node* node, Node* parent) {
-        parent->children.push_back(node);
-    }
-
-    Node* find(string p) {
-        for (auto x : children) {
-            if (x->name == p) return x;
-            x->find(p);
-        }
-    }
+    string type;
+    int size;
+    vector<Node *> children;
 };
+
+Node *newNode(int size, string name, string type)
+{
+    Node *temp = new Node;
+    temp->name = name;
+    temp->size = size;
+    temp->type = type;
+    return temp;
+}
+
+Node* findNode(Node* n, string p) {
+		if(n->name == p) return n;
+		else{
+        	for (auto child : n->children) {
+            	Node* result = findNode(child, p);
+            	if(result!= NULL){
+            		return result;
+				}
+			}
+        }
+        return NULL;
+    }
+    
+int getSize(Node *root){
+	if (root){
+		int size = root->size;
+		for (int i = 0; i < root->children.size(); i++)
+            size += getSize(root->children[i]);
+		return size;
+	}
+	return 0;
+}
+
+void getSizes(Node* root){
+	if (root){
+        root->size = getSize(root);
+        for (int i = 0; i < root->children.size(); i++)
+            getSizes(root->children[i]);
+    }
+}
+
+void traverse(Node *root){
+    if (root){
+        cout<<root->name<<" ("<<root->type<<", size= "<<root->size<<")\n";
+        for (int i = 0; i < root->children.size(); i++)
+            traverse(root->children[i]);
+    }
+}
+
+void getAnswear(Node* root){
+	if (root){
+        if(root->size <= 100000 && root->type == "dir"){
+        	cout<<root->name<<" ("<<root->type<<", size= "<<root->size<<")\n";
+        	currentResult+=root->size;
+		}
+        for (int i = 0; i < root->children.size(); i++)
+            getAnswear(root->children[i]);
+    }
+}
 
 
 void solve() {
-    ifstream f("data.txt");
+    ifstream f("Day_7_data.txt");
     string l;
     stack<string> parents;
-    Node root("/");
+    Node* root = newNode(0, "/", "dir");
     
     while (getline(f, l)) {
         if (l.find("$ cd") != string::npos) {
@@ -56,27 +85,38 @@ void solve() {
             else parents.push(sub);
         }
         else if (l.find("$ ls") != string::npos) continue;
-        else {
+        else{
             string name;
+            int size;
+            Node* n = new Node;
             if (l.find("dir") != string::npos) {
                 name = l.substr(4);
-                Node n(name);
+                n->size = 0;
+                n->name = name;
+                n->type = "dir";
             }else{
                 int space = l.find(" ");
-                name = l.substr(space + 1);
-                int size = stoi(l.substr(0, space));
-                Node n(name, size);
-                Node* p = root.find(parents.top());
-            }
+                n->name = l.substr(space + 1);
+                n->size = stoi(l.substr(0, space));
+                n->type = "file";
+			}
+            Node* p = findNode(root, parents.top());
+        	p->children.push_back(n);
         }
-
-
     }
+    getSizes(root);
+    
+   	traverse(root);
+   	cout<<"\n";
+   	getAnswear(root);
+   	cout<<"\nResult: "<<currentResult;
 }
 
+int main() {
+	ios::sync_with_stdio(0);
+	cin.tie(0);
 
+	solve();
 
-int main()
-{
-    solve();
+	return 0;
 }
