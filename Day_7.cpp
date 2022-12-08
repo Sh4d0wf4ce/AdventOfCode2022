@@ -3,6 +3,7 @@
 using namespace std;
 
 int currentResult = 0;
+int minDirSize = 0; 
 
 struct Node
 {
@@ -21,18 +22,20 @@ Node *newNode(int size, string name, string type)
     return temp;
 }
 
-Node* findNode(Node* n, string p) {
-		if(n->name == p) return n;
-		else{
-        	for (auto child : n->children) {
-            	Node* result = findNode(child, p);
-            	if(result!= NULL){
-            		return result;
-				}
+
+Node* findNode(Node* n, vector<string> v) {
+	for(int i = 1; i<v.size(); i++){
+		Node* tmp = n;
+		for(auto child : n->children){
+			if(child->name == v[i]){
+				n = child;
 			}
-        }
-        return NULL;
-    }
+	 	}
+	 	if(tmp == n) return NULL;
+	}
+	return n;	
+}
+
     
 int getSize(Node *root){
 	if (root){
@@ -71,18 +74,28 @@ void getAnswear(Node* root){
     }
 }
 
+void getDirToDelete(Node* root, int space){
+	if (root){
+        if(root->size >= space && root->type == "dir"){
+        	minDirSize = min(minDirSize, root->size);
+		}
+        for (int i = 0; i < root->children.size(); i++)
+            getDirToDelete(root->children[i], space);
+    }
+}
+
 
 void solve() {
     ifstream f("Day_7_data.txt");
     string l;
-    stack<string> parents;
+    vector<string> parents;
     Node* root = newNode(0, "/", "dir");
     
     while (getline(f, l)) {
         if (l.find("$ cd") != string::npos) {
             string sub = l.substr(5);
-            if (sub == "..") parents.pop();
-            else parents.push(sub);
+            if (sub == "..") parents.pop_back();
+            else parents.push_back(sub);
         }
         else if (l.find("$ ls") != string::npos) continue;
         else{
@@ -100,22 +113,24 @@ void solve() {
                 n->size = stoi(l.substr(0, space));
                 n->type = "file";
 			}
-            Node* p = findNode(root, parents.top());
+            Node* p = findNode(root, parents);
         	p->children.push_back(n);
         }
     }
     getSizes(root);
-    
    	traverse(root);
    	cout<<"\n";
    	getAnswear(root);
-   	cout<<"\nResult: "<<currentResult;
+   	cout<<"\nResult: "<<currentResult<<"\n";
+   	int space = 30000000 - (70000000 - root->size);
+   	minDirSize = root->size;
+   	getDirToDelete(root, space);
+   	cout<<"\nYou need delete directory of size "<<minDirSize<<" to update the system";
 }
 
 int main() {
 	ios::sync_with_stdio(0);
 	cin.tie(0);
-
 	solve();
 
 	return 0;
