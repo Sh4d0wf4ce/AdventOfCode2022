@@ -26,7 +26,6 @@ void solve() {
     string l;
     char dir;
     set<pi> visited;
-    vector<pi> knots(10, {0,0});
     pi T(0,0), H(0,0), v;
     visited.insert(T);
     cout<<"Head: ("<<H.f<<","<<H.s<<") Tail: ("<<T.f<<","<<T.s<<")\n";
