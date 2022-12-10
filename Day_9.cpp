@@ -12,49 +12,66 @@ int getDistance(pi T, pi H){
 	return max(abs(H.f - T.f), abs(H.s - T.s));
 }
 
-pi getShiftVector(pi T, pi H, char dir){
+pi getShiftVector(pi T, pi H, pi dir){
 	pi p(H.f-T.f, H.s-T.s);
-	if(dir == 'U') p.s--;
-	if(dir == 'D') p.s++;
-	if(dir == 'L') p.f++;
-	if(dir == 'R') p.f--;
+	
+	if(abs(p.f) == abs(p.s)){
+		p.f-= dir.f;
+		p.s-= dir.s;
+	}else if(max(abs(p.f), abs(p.s)) == abs(p.f)){
+		p.f-= dir.f;
+	}else{
+		p.s-= dir.s;
+	}
+	
+	return p;
+}
+
+pi getDir(pi O, pi N){
+	pi p(N.f-O.f, N.s-O.s);
+	
 	return p;
 }
 
 void solve() {
     int n, distance;
     string l;
-    char dir;
+    char d;
     set<pi> visited;
-    pi T(0,0), H(0,0), v;
-    visited.insert(T);
-    cout<<"Head: ("<<H.f<<","<<H.s<<") Tail: ("<<T.f<<","<<T.s<<")\n";
+    vector<pi> knots(10, {0,0});
+    pi v, dir;
+    visited.insert(knots[9]);
     while(getline(cin, l)){
-    	dir = l[0];
     	n = stoi(l.substr(2));
+    	d = l[0];
     	for(int i = 0; i<n; i++){
-    		if(dir == 'U') H.s++;
-    		if(dir == 'D') H.s--;
- 			if(dir == 'L') H.f--;
- 			if(dir == 'R') H.f++;
- 			
- 			distance = getDistance(T,H);
- 			
- 			if(distance == 2){
- 				v = getShiftVector(T, H, dir);
- 				T.f+= v.f;
- 				T.s+= v.s;
- 				visited.insert(T);
+    		if(d == 'U') dir = {0, 1};
+			if(d == 'D') dir = {0, -1};
+			if(d == 'L') dir = {-1, 0};
+			if(d == 'R') dir = {1, 0};
+    		
+    		knots[0].f += dir.f;
+    		knots[0].s += dir.s;
+			
+			for(int knot = 1; knot<knots.size(); knot++){
+				distance = getDistance(knots[knot], knots[knot-1]);
+				if(distance == 2){
+					pi tmp = knots[knot];
+					v = getShiftVector(knots[knot], knots[knot-1], dir);
+	 				knots[knot].f+= v.f;
+	 				knots[knot].s+= v.s;
+	 				
+	 				dir = getDir(tmp, knots[knot]);
+				}else break;
 			}
- 			
+			visited.insert(knots[9]);
 		}
-		cout<<"Head: ("<<H.f<<","<<H.s<<") Tail: ("<<T.f<<","<<T.s<<")\n";
 	}
 	cout<<"result: "<<visited.size();
 }
 
 int main() {
-	freopen("Day_8_data.txt", "r", stdin);
+	freopen("day_9_data.txt", "r", stdin);
 	ios::sync_with_stdio(0);
 	cin.tie(0);
 	solve();
