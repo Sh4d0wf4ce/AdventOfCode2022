@@ -1,3 +1,4 @@
+// Example program
 #include <iostream>
 #include <variant>
 #include <vector>
@@ -43,28 +44,24 @@ public:
     
 };
 
-Packet parse(){
-    string l, n;
+Packet parse(string l, int &i){
     Packet p;
-    getline(cin, l);
-    int i = 1;
     while(l[i] != ']'){
         if(l[i] == '['){
             i++;
+            Packet tmp = parse(l, i);
+            p.AddData(tmp);
             continue;
         }
         
         if(l[i] == ','){
-            p.AddData(stoi(n));
-            n = "";
             i++;
             continue;
         }
         
-        n+=l[i];
+        p.AddData(l[i] - '0');
         i++;
     }
-    p.AddData(stoi(n));
     return p;
 }
 
@@ -74,7 +71,10 @@ int main()
     Packet p1(2, 3, 4, 5);
     Packet p2(5, p1, 6, p1);
     Packet p3(p1, p2);
-    Packet p4 = parse();
+    string l;
+    getline(cin, l);
+    int i = 0;
+    Packet p4  = parse(l ,i);
     
     p4.write();
     
