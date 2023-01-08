@@ -1,4 +1,3 @@
-// Example program
 #include <iostream>
 #include <variant>
 #include <vector>
@@ -40,6 +39,41 @@ public:
         }
         cout<<"]";
     }
+    
+    bool operator == (Packet const &p) const{
+        if(content.size() != p.content.size()) return false;
+        for(int i = 0; i<content.size(); i++){
+            if(holds_alternative<int>(content[i])){
+                if(holds_alternative<Packet>(p.content[i])) return false;
+                if(get<int>(content[i]) != get<int>(p.content[i])) return false;
+            }else{
+                if(holds_alternative<int>(p.content[i])) return false;
+                if(!(get<Packet>(content[i]) == get<Packet>(p.content[i]))) return false;
+            }    
+        }
+        return true;
+    }
+    
+    bool operator != (Packet const &p) const{
+        return !(*this == p);    
+    }
+    
+    
+    
+    bool check(Packet p){
+        for(int i = 0; i<content.size(); i++){
+            if(holds_alternative<int>(content[i])){
+                if(holds_alternative<int>(p.content[i])){
+                    if(get<Packet>(content[i]) != get<Packet>(p.content[i])) return get<Packet>(content[i]) < get<Packet>(p.content[i]);
+                }
+            }else{
+                if(holds_alternative<int>(p.content[i])) return false;
+                if(!(get<Packet>(content[i]) == get<Packet>(p.content[i]))) return false;
+            }    
+        }
+        return true;
+    }
+    
 
     
 };
@@ -49,8 +83,7 @@ Packet parse(string l, int &i){
     while(l[i] != ']'){
         if(l[i] == '['){
             i++;
-            Packet tmp = parse(l, i);
-            p.AddData(tmp);
+            p.AddData(parse(l, i));
             continue;
         }
         
@@ -62,20 +95,35 @@ Packet parse(string l, int &i){
         p.AddData(l[i] - '0');
         i++;
     }
+    i++;
     return p;
+}
+
+Packet parse(string l){
+    int i = 1;
+    return parse(l, i);
+}
+
+vector<Packet> parseLines(){
+    string l;
+    vector<Packet> packets;
+    while(getline(cin, l)){
+        if(l == "") continue;
+        packets.push_back(parse(l));
+    }
+    return packets;
 }
 
 
 int main()
 {
-    Packet p1(2, 3, 4, 5);
-    Packet p2(5, p1, 6, p1);
-    Packet p3(p1, p2);
-    string l;
-    getline(cin, l);
-    int i = 0;
-    Packet p4  = parse(l ,i);
+    Packet p1 = parse("[1,1,3,1,1])");
+    Packet p2 = parse("[1,1,5,1,1]");
     
-    p4.write();
+    if(p1==p2) cout<<"tak\n";
+    else cout<<"nie\n";
     
+    p1.write();
+    cout<<"\n";
+    p2.write();
 }
