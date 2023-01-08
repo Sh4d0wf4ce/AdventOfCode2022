@@ -3,6 +3,9 @@
 #include <vector>
 #include <string>
 
+
+//TODO: getValue(), getType(), check() for packet-packet, packet-int
+
 using namespace std;
 
 class Packet{
